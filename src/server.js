@@ -1,5 +1,6 @@
 import http from "http"
-import WebSocket from "ws"
+// import WebSocket from "ws"
+import SocketIO from "socket.io"
 import express from "express";
 
 const app = express();
@@ -15,26 +16,31 @@ const handleListen = () => console.log(`Listening on http://localhost:${port}`)
 // app.listen(port, handleListen);
 
 // http 서버 위에 webSocket 서버를 만을 수 있도록 함 (http 서버에 access)
-const server = http.createServer(app);
-const wss = new WebSocket.Server({server});
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer)
 
-const sockets = []
-
-wss.on("connection", (socket) => {
-  sockets.push(socket)
-  socket["nickname"] = "Anon"
-  console.log("Connected to Browser ✅")
-  socket.on("close", () => console.log("Disconnected from Browser ❌"))
-  socket.on("message", (msg) => {
-    const message = JSON.parse(msg)
-    // if else 대신에 switch
-    switch (message.type) {
-      case "new_message":
-        sockets.forEach(aSocket => aSocket.send(`${socket.nickname}:${message.payload}`))
-      case "nickname":
-        socket["nickname"] = message.payload
-    }
-  })
+wsServer.on("connection", (socket) => {
+  console.log(socket)
 })
 
-server.listen(port, handleListen);
+// const wss = new WebSocket.Server({server});
+
+// const sockets = []
+// wss.on("connection", (socket) => {
+//   sockets.push(socket)
+//   socket["nickname"] = "Anon"
+//   console.log("Connected to Browser ✅")
+//   socket.on("close", () => console.log("Disconnected from Browser ❌"))
+//   socket.on("message", (msg) => {
+//     const message = JSON.parse(msg)
+//     // if else 대신에 switch
+//     switch (message.type) {
+//       case "new_message":
+//         sockets.forEach(aSocket => aSocket.send(`${socket.nickname}:${message.payload}`))
+//       case "nickname":
+//         socket["nickname"] = message.payload
+//     }
+//   })
+// })
+
+httpServer.listen(port, handleListen);
