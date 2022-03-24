@@ -1,6 +1,6 @@
 import http from "http"
-// import WebSocket from "ws"
-import SocketIO from "socket.io"
+import { Server } from "socket.io"
+import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 
 const app = express();
@@ -17,7 +17,16 @@ const handleListen = () => console.log(`Listening on http://localhost:${port}`)
 
 // http 서버 위에 webSocket 서버를 만을 수 있도록 함 (http 서버에 access)
 const httpServer = http.createServer(app)
-const wsServer = SocketIO(httpServer)
+const wsServer = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+})
+
+instrument(wsServer, {
+  auth: false
+})
 
 function publicRooms(){
   const {sockets: {
