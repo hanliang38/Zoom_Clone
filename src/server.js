@@ -2,7 +2,6 @@ import http from "http"
 // import WebSocket from "ws"
 import SocketIO from "socket.io"
 import express from "express";
-import { doesNotMatch } from "assert";
 
 const app = express();
 const port = 3000;
@@ -28,6 +27,13 @@ wsServer.on("connection", (socket) => {
     socket.join(roomName)
     done()
     socket.to(roomName).emit("welcome")
+  })
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach(room => socket.to(room).emit("bye"))
+  })
+  socket.on("new_message",(msg, room, done) => {
+    socket.to(room).emit("new_message", msg)
+    done()
   })
 })
 
