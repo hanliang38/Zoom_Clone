@@ -14,12 +14,12 @@ async function getMedia() {
       audio: true,
       video: true,
     });
+    console.log(myStream);
     myFace.srcObject = myStream;
   } catch (e) {
     console.log(e);
   }
 }
-
 getMedia();
 
 function handleMuteClick() {
