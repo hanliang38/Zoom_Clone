@@ -120,22 +120,42 @@ socket.on("welcome", async () => {
   socket.emit("offer", offer, roomName);
 });
 // peer B
-socket.on("offer", async(offer) => {
+socket.on("offer", async (offer) => {
+  console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer);
-  const answer = await myPeerConnection.createAnswer()
+  const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
-  socket.emit("answer",answer, roomName)
+  socket.emit("answer", answer, roomName);
+  console.log("sent the answer");
 });
 
-socket.on("answer", answer => {
-    myPeerConnection.setRemoteDescription(answer);
-})
+socket.on("answer", (answer) => {
+  console.log("received the answer");
+  myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+  console.log("received candidate");
+  myPeerConnection.addIceCandidate(ice);
+});
 
 // RTC Code
 
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream)
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
 }
+
+function handleIce(data) {
+  console.log("send candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  const peersFace = document.getElementById("peersFace")
+  peersFace.srcObject = data.stream;
+};
